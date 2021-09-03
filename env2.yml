@@ -1,0 +1,25 @@
+name: pytorchEnv
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - ipykernel>=5.4.3
+  - ipython>=7.20.0
+  - matplotlib>=3.3.2 
+  - matplotlib-base>=3.3.2
+  - notebook>=6.2.0
+  - numpy>=1.19.2
+  - numpy-base>=1.19.2
+  - pandas>=1.2.0
+  - pip>=20.3.3
+  - pylint>=2.6.0
+  - python>=3.8.5
+  - pytorch>=1.7.1
+  - requests>=2.25.1
+  - scipy>=1.5.2
+  - seaborn>=0.11.1
+  - setuptools>=51.0.0
+  - scikit-learn>=0.23.2
+  - torchvision>=0.8.2
+prefix: /home/silas/miniconda3

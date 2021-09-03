@@ -51,7 +51,7 @@ class NeuralNet(nn.Module):
         out = self.l2(out)
         return out
 
-model = NeuralNet(input_size, hidden_size, num_classes)
+model = NeuralNet(input_size, hidden_size, num_classes).to(device)
 
 # loss and optimier
 criterion = nn.CrossEntropyLoss()
