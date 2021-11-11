@@ -50,8 +50,8 @@ output, next_hidden = rnn(input_tensor[0], hidden_tensor)
 #print(output.size())
 #print(next_hidden.size())
 
-#
-
+# S161063
+# 2204825319
 
 def category_from_output(output):
     category_idx = torch.argmax(output).item()
