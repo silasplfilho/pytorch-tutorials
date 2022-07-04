@@ -45,7 +45,7 @@ plt.show()
 
 
 # Example 3-4
-relu = torch.nn.ReLU()
+relu = t orch.nn.ReLU()
 x = torch.range(-5., 5., 0.1)
 y = relu(x)
 

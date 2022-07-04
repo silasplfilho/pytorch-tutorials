@@ -52,3 +52,10 @@ print(t1.dtype)
 print(t2.dtype)
 print(t3.dtype)
 print(t4.dtype)
+
+# VIDEO 10
+## OPERATIONS WITH TENSORS
+
+
+# VIDEO 11
+f
