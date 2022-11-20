@@ -1,5 +1,4 @@
 # VIDEO 15 - ETL process in pytorch
-from turtle import forward
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -51,7 +50,7 @@ plt.show()
 
 # VIDEO 17
 import torch.nn as nn
-
+import torch.nn.functional as F
 
 class Network(nn.Module):
     def __init__(self):
@@ -67,6 +66,33 @@ class Network(nn.Module):
  
 
     def forward(self, t):
+        # (1) input layer
+        t = t
+
+        # (2) hidden conv layer
+        t = self.conv1(t)
+        t = F.relu(t)  # funcao de ativacao
+        t = F.max_pool2d(t, kernel_size=2, stride=2)
+
+        # (3) hidden conv layer
+        t = self.conv2(t)
+        t = F.relu(t)
+        t = F.max_pool2d(t, kernel_size=2, stride=2)
+
+        # (4) hidden linear layer
+        t = t.reshape(-1, 12 * 4 * 4)  # 12 é o tamanho do output da camada anterior, 4 * 4 é a dimensao da img, de cada uma das 12 saidas da camada anterior
+        t = self.fc1(t)
+        t = F.relu(t)
+
+        # (5) hidden linear layer
+        t = self.fc2(t)
+        t = F.relu(t)
+
+        # (6) output layer
+        t = self.out(t)
+        t = F.softmax(t, dim=1)
+
+
         return t
 
 
