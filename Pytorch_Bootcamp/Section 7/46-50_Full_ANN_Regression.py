@@ -42,7 +42,6 @@ df['Weekday'] = df['EDdate'].dt.strftime("%a")
 df.head()
 
 my_time = df["pickup_datetime"][0]
-my_time
 
 ##  Separando variaveis categoricas e numericas - Aula 48 - Part 2
 
@@ -69,7 +68,7 @@ wkdy = df['Weekday'].cat.codes.values
 cats = np.stack([hr, ampm, wkdy], axis=1)
 # cats = np.stack([df[col].cat.codes.values for col in cat_cols], 1)  # comando que realiza o mesmo processo de transformacao
 
-# transformando np.array em unm tensor
+# transformando np.array em um tensor
 cats = torch.tensor(cats, dtype=torch.int64)
 
 conts = np.stack([df[col].values for col in cont_cols], 1)
@@ -85,7 +84,7 @@ cat_szs = [len(df[col].cat.categories) for col in cat_cols]
 emb_szs = [(size, min(50, (size+1)//2 )) for size in cat_szs]
 
 
-## Implementando Regressão - Aula 49 - Parte 3
+## Implementando Arquitetura da Rede Neural - Aula 49 - Parte 3
 
 class TabularModel(nn.Module):
 
