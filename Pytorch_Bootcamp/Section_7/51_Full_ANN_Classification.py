@@ -6,13 +6,6 @@ import matplotlib.pyplot as plt
 
 df = pd.read_csv('Data/NYCTaxiFares.csv')
 
-df.describe()
-df.columns
-df['fare_amount'].describe()
-
-
-## feature engineering (criacao de novas features a partir das ja existentes)- aula 47 - Part 1
-
 def haversine_distance(df, lat1, long1, lat2, long2):
     """
     funcao de haversine - mede a distancia entre dois pontos usando latitude e longitude
@@ -39,25 +32,17 @@ df["Hour"] = df["EDdate"].dt.hour
 df["AMorPM"] = np.where(df['Hour']<12, 'am', 'pm')
 df['Weekday'] = df['EDdate'].dt.strftime("%a")
 
-df.head()
-
-my_time = df["pickup_datetime"][0]
-
-##  Separando variaveis categoricas e numericas - Aula 48 - Part 2
-
 # variavel com nome das features categoricas
 cat_cols = ['Hour', 'AMorPM', 'Weekday']
 
 # variavel com nome das features continuas
 cont_cols = ['pickup_latitude', 'pickup_longitude', 'dropoff_latitude', 'dropoff_longitude', 'passenger_count', 'dist_km']
 
-y_col = ['fare_amount']
+y_col = ['fare_class']
 
-df.dtypes
 for cat in cat_cols:
     df[cat] = df[cat].astype('category')  # transforma o tipo do atributo para categorico
 
-df.dtypes
 
 # transformando categorias em valores
 hr = df['Hour'].cat.codes.values
@@ -66,7 +51,7 @@ wkdy = df['Weekday'].cat.codes.values
 
 # rearranjando as variaveis como uma matriz
 cats = np.stack([hr, ampm, wkdy], axis=1)
-# cats = np.stack([df[col].cat.codes.values for col in cat_cols], 1)  # comando que realiza o mesmo processo de transformacao
+
 
 # transformando np.array em um tensor
 cats = torch.tensor(cats, dtype=torch.int64)
@@ -74,19 +59,25 @@ cats = torch.tensor(cats, dtype=torch.int64)
 conts = np.stack([df[col].values for col in cont_cols], 1)
 conts = torch.tensor(conts, dtype=torch.float)
 
-y = torch.tensor(df[y_col].values, dtype=torch.float)
-
-cats.shape
-conts.shape
+# y = torch.tensor(df[y_col].values, dtype=torch.float)
+y = torch.tensor(df[y_col].values).flatten()
 
 # usando embedding para representar one-hot-encoding dos atributos categoricos
 cat_szs = [len(df[col].cat.categories) for col in cat_cols]
 emb_szs = [(size, min(50, (size+1)//2 )) for size in cat_szs]
 
 
-## Implementando Arquitetura da Rede Neural - Aula 49 - Parte 3
+## Implementando Regressão - Aula 49 - Parte 3
 
 class TabularModel(nn.Module):
+    """
+    Modelo de rede neural que lida com dados tabulares. Os parametros de entrada são:
+        emb_szs (lista de tuplas): atributos/features categóricas sao transformadas em embeddings - aqui passo a lista dessa transformacao
+        n_count (int): numero de atributos/features continuos
+        out_sz: quantidade de classes de saida - no caso de regressao, sera apenas um. No caso de uma classificacao binaria, 2
+        layers (lista de ints): lista q contem a quantidade de neuronios em cada camada
+        p (float): 
+    """
 
     def __init__(self, emb_szs, n_cont, out_sz, layers, p=0.5):
         super().__init__()
@@ -124,11 +115,11 @@ class TabularModel(nn.Module):
         return x
 
 
-## Treinamento e Validaçã0 - Aula 50
+## Treinamento e Validaçã0 - Aula 50 - Instanciando o modelo de classificacao
 torch.manual_seed(33)
-model = TabularModel(emb_szs, conts.shape[1], 1, [200, 100], p=0.4)
+model = TabularModel(emb_szs, conts.shape[1], 2, [200, 100], p=0.4)
 
-criterion = nn.MSELoss()
+criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 batch_size = 60000
@@ -141,8 +132,6 @@ con_test = conts[batch_size-test_size:batch_size]
 
 y_train = y[:batch_size-test_size]
 y_test = y[batch_size-test_size:batch_size]
-
-len(cat_train)
 
 
 # Treinamento do modelo
@@ -175,19 +164,31 @@ losses_detach[0]
 
 
 plt.plot(range(epochs), losses_detach)
-plt.ylabel('RMSE Loss')
+plt.ylabel('CrossEntropy Loss')
 plt.xlabel('epoch')
 plt.show()
-
 
 # TO EVALUATE THE ENTIRE TEST SET
 with torch.no_grad():
     y_val = model(cat_test, con_test)
-    loss = torch.sqrt(criterion(y_val, y_test))
-print(f'RMSE: {loss:.8f}')
+    loss = criterion(y_val, y_test)
+print(f'CE Loss: {loss:.8f}')
+
+rows = 50
+correct = 0
+print(f'{"MODEL OUTPUT":26} ARGMAX  Y_TEST')
+for i in range(rows):
+    print(f'{str(y_val[i]):26} {y_val[i].argmax():^7}{y_test[i]:^7}')
+    if y_val[i].argmax().item() == y_test[i]:
+        correct += 1
+print(f'\n{correct} out of {rows} = {100*correct/rows:.2f}% correct')
 
 # Make sure to save the model only after the training has happened!
 if len(losses) == epochs:
-    torch.save(model.state_dict(), 'TaxiFareRegrModel.pt')
+    torch.save(model.state_dict(), 'TaxiFareClssModel.pt')
 else:
     print('Model has not been trained. Consider loading a trained model instead.')
+
+# Load Model
+# model2.load_state_dict(torch.load('TaxiFareClssModel.pt'));
+# model2.eval() # be sure to run this step!
